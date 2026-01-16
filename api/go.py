@@ -1,19 +1,25 @@
-from http.server import BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs
 import json, datetime
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        q = parse_qs(urlparse(self.path).query)
-        url = q.get("url", [""])[0]
+def handler(request):
+    qs = parse_qs(request.query_string.decode())
+    url = qs.get("url", [""])[0]
 
-        with open("/tmp/cliques.json", "a") as f:
+    # log simples (opcional)
+    try:
+        with open("/tmp/cliques.log", "a") as f:
             f.write(json.dumps({
                 "url": url,
                 "ts": datetime.datetime.utcnow().isoformat()
             }) + "\n")
+    except:
+        pass
 
-        self.send_response(302)
-        self.send_header("Location", url)
-        self.end_headers()
-add redirect api
+    return {
+        "statusCode": 302,
+        "headers": {
+            "Location": url
+        }
+    }
+fix vercel handler
+
